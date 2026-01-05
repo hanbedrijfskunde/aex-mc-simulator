@@ -6,16 +6,13 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0"
     />
-    <title>Management Simulator - AEX</title>
+    <title>Management Simulator - Risico & Rendement</title>
     <!-- Gebruik stabiele versies van React en ReactDOM -->
     <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
-    <!-- Prop-Types is vereist voor de UMD-versie van Recharts -->
     <script src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Tailwind CSS voor styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Recharts met specifieke versie voor stabiliteit -->
     <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
     <style>
       body {
@@ -28,23 +25,12 @@
       input[type="range"] {
         cursor: pointer;
       }
-      /* Smooth transition voor tab switches */
-      .fade-enter {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      .fade-enter-active {
-        opacity: 1;
-        transform: translateY(0);
-        transition: all 500ms;
-      }
     </style>
   </head>
   <body>
     <div id="root"></div>
 
     <script type="text/babel">
-      // Destructure Recharts componenten van de globale Recharts variabele
       const {
         ComposedChart,
         Line,
@@ -55,14 +41,12 @@
         Legend,
         ResponsiveContainer,
         Area,
-        Bar,
-        ReferenceLine,
         BarChart,
+        Bar,
       } = window.Recharts;
 
       const { useState, useEffect, useMemo } = React;
 
-      // Inline SVG Iconen voor maximale compatibiliteit zonder externe icon-libraries
       const Icon = ({ name, className = "w-4 h-4" }) => {
         const icons = {
           Zap: <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />,
@@ -118,114 +102,86 @@
         const [results, setResults] = useState(null);
         const [isSimulating, setIsSimulating] = useState(false);
 
-        // Historische AEX data (1984-2023)
-        const rawData = `
-"Year","AEX annual return (%)"
-"1983","–"
-"1984","17.13"
-"1985","41.69"
-"1986","-5.60"
-"1987","-32.10"
-"1988","51.12"
-"1989","16.07"
-"1990","-23.85"
-"1991","20.87"
-"1992","3.17"
-"1993","44.93"
-"1994","0.05"
-"1995","17.10"
-"1996","33.56"
-"1997","40.95"
-"1998","29.87"
-"1999","24.69"
-"2000","-5.04"
-"2001","-20.52"
-"2002","-36.32"
-"2003","4.62"
-"2004","3.09"
-"2005","25.48"
-"2006","13.41"
-"2007","4.12"
-"2008","-52.32"
-"2009","36.35"
-"2010","5.74"
-"2011","-11.87"
-"2012","9.46"
-"2013","17.24"
-"2014","5.62"
-"2015","4.11"
-"2016","9.39"
-"2017","12.71"
-"2018","-10.41"
-"2019","23.90"
-"2020","3.32"
-"2021","27.75"
-"2022","-13.65"
-"2023","14.22"
-`;
-
-        const historicalReturns = useMemo(() => {
-          return rawData
-            .split("\n")
-            .slice(2)
-            .map((line) => {
-              const match = line.match(/"[^"]*","([^"]*)"/);
-              return match ? parseFloat(match[1]) : null;
-            })
-            .filter((val) => val !== null && !isNaN(val));
-        }, []);
+        const historicalData = useMemo(
+          () =>
+            [
+              { year: 1984, return: 17.13, rf: 6.5 },
+              { year: 1985, return: 41.69, rf: 5.75 },
+              { year: 1986, return: -5.6, rf: 5.25 },
+              { year: 1987, return: -32.1, rf: 4.5 },
+              { year: 1988, return: 51.12, rf: 4.25 },
+              { year: 1989, return: 16.07, rf: 7.0 },
+              { year: 1990, return: -23.85, rf: 8.5 },
+              { year: 1991, return: 20.87, rf: 9.25 },
+              { year: 1992, return: 3.17, rf: 9.5 },
+              { year: 1993, return: 44.93, rf: 7.0 },
+              { year: 1994, return: 0.05, rf: 5.25 },
+              { year: 1995, return: 17.1, rf: 4.75 },
+              { year: 1996, return: 33.56, rf: 3.5 },
+              { year: 1997, return: 40.95, rf: 3.25 },
+              { year: 1998, return: 29.87, rf: 3.5 },
+              { year: 1999, return: 24.69, rf: 3.0 },
+              { year: 2000, return: -5.04, rf: 4.25 },
+              { year: 2001, return: -20.52, rf: 4.5 },
+              { year: 2002, return: -36.32, rf: 3.5 },
+              { year: 2003, return: 4.62, rf: 2.5 },
+              { year: 2004, return: 3.09, rf: 2.1 },
+              { year: 2005, return: 25.48, rf: 2.2 },
+              { year: 2006, return: 13.41, rf: 3.25 },
+              { year: 2007, return: 4.12, rf: 4.25 },
+              { year: 2008, return: -52.32, rf: 4.0 },
+              { year: 2009, return: 36.35, rf: 1.5 },
+              { year: 2010, return: 5.74, rf: 1.0 },
+              { year: 2011, return: -11.87, rf: 1.5 },
+              { year: 2012, return: 9.46, rf: 0.5 },
+              { year: 2013, return: 17.24, rf: 0.25 },
+              { year: 2014, return: 5.62, rf: 0.15 },
+              { year: 2015, return: 4.11, rf: -0.05 },
+              { year: 2016, return: 9.39, rf: -0.3 },
+              { year: 2017, return: 12.71, rf: -0.6 },
+              { year: 2018, return: -10.41, rf: -0.55 },
+              { year: 2019, return: 23.9, rf: -0.5 },
+              { year: 2020, return: 3.32, rf: -0.55 },
+              { year: 2021, return: 27.75, rf: -0.6 },
+              { year: 2022, return: -13.65, rf: 0.5 },
+              { year: 2023, return: 14.22, rf: 3.25 },
+            ].map((d) => ({ ...d, premium: (d.return - d.rf) / 100 })),
+          []
+        );
 
         const runSimulation = () => {
           setIsSimulating(true);
-          // Kleine vertraging voor UX feedback
           setTimeout(() => {
             const horizon = 10;
             const initialInvestment = 10000;
             const allPaths = [];
             const rfPath = [initialInvestment];
+            const currentRfDec = riskFreeRate / 100;
 
-            // Bereken Risicovrije pad
             for (let i = 1; i <= horizon; i++) {
-              rfPath.push(rfPath[i - 1] * (1 + riskFreeRate / 100));
+              rfPath.push(rfPath[i - 1] * (1 + currentRfDec));
             }
 
-            // Monte Carlo Simulatie
             for (let s = 0; s < numSimulations; s++) {
               const path = [initialInvestment];
               for (let y = 1; y <= horizon; y++) {
                 const randomIndex = Math.floor(
-                  Math.random() * historicalReturns.length
+                  Math.random() * historicalData.length
                 );
-                const baseReturn = historicalReturns[randomIndex] / 100;
-                const adjustedReturn = baseReturn * beta;
-                path.push(path[y - 1] * (1 + adjustedReturn));
+                const sampledPremium = historicalData[randomIndex].premium;
+                const capmReturn = currentRfDec + beta * sampledPremium;
+                const nextVal = Math.max(0, path[y - 1] * (1 + capmReturn));
+                path.push(nextVal);
               }
               allPaths.push(path);
             }
 
-            // Sorteer resultaten voor percentielen
             const finalValues = allPaths
               .map((p) => p[horizon])
               .sort((a, b) => a - b);
             const rfFinal = rfPath[horizon];
-            const underperformCount = finalValues.filter(
-              (v) => v < rfFinal
-            ).length;
+            const sumFinal = finalValues.reduce((a, b) => a + b, 0);
 
-            // Histogram data
-            const min = Math.min(...finalValues);
-            const max = Math.max(...finalValues);
-            const bins = 20;
-            const binSize = (max - min) / bins;
-            const histogramData = Array.from({ length: bins }, (_, i) => {
-              const rangeMin = min + i * binSize;
-              const count = finalValues.filter(
-                (v) => v >= rangeMin && v < rangeMin + binSize
-              ).length;
-              return { range: `€${(rangeMin / 1000).toFixed(1)}k`, count };
-            });
-
-            // Tijdlijn data voor de grafiek
             const chartData = [];
             for (let y = 0; y <= horizon; y++) {
               const yearValues = allPaths
@@ -245,13 +201,14 @@
 
             setResults({
               chartData,
-              histogramData,
-              finalValues,
               rfFinal,
-              probUnderperform: (underperformCount / numSimulations) * 100,
+              probUnderperform:
+                (finalValues.filter((v) => v < rfFinal).length /
+                  numSimulations) *
+                100,
               best: finalValues[finalValues.length - 1],
               worst: finalValues[0],
-              avg: finalValues.reduce((a, b) => a + b, 0) / finalValues.length,
+              avg: sumFinal / finalValues.length,
             });
             setIsSimulating(false);
           }, 100);
@@ -264,22 +221,20 @@
         return (
           <div className="min-h-screen p-4 md:p-8 font-sans text-slate-900">
             <div className="max-w-7xl mx-auto space-y-6">
-              {/* Header Sectie */}
               <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 bg-blue-600 rounded-xl text-white shadow-lg">
+                  <div className="p-3 bg-indigo-600 rounded-xl text-white shadow-lg">
                     <Icon
                       name="Zap"
                       className="w-8 h-8"
                     />
                   </div>
                   <div>
-                    <h1 className="text-2xl font-bold text-slate-900">
+                    <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
                       Management Simulator
                     </h1>
-                    <p className="text-slate-500 text-sm italic text-wrap">
-                      Strategische investeringsbeslissingen onderbouwd met AEX
-                      data
+                    <p className="text-slate-500 text-sm italic">
+                      Hulpmiddel voor het begrijpen van Risico en Rendement
                     </p>
                   </div>
                 </div>
@@ -288,8 +243,8 @@
                     onClick={() => setActiveTab("simulation")}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
                       activeTab === "simulation"
-                        ? "bg-white text-blue-600 shadow-sm"
-                        : "text-slate-500 hover:text-slate-800"
+                        ? "bg-white text-indigo-600 shadow-sm"
+                        : "text-slate-500"
                     }`}
                   >
                     <Icon
@@ -302,8 +257,8 @@
                     onClick={() => setActiveTab("explanation")}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
                       activeTab === "explanation"
-                        ? "bg-white text-blue-600 shadow-sm"
-                        : "text-slate-500 hover:text-slate-800"
+                        ? "bg-white text-indigo-600 shadow-sm"
+                        : "text-slate-500"
                     }`}
                   >
                     <Icon
@@ -317,7 +272,6 @@
 
               {activeTab === "simulation" ? (
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 animate-in fade-in duration-500">
-                  {/* Instellingen Kolom */}
                   <section className="lg:col-span-1 space-y-6">
                     <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                       <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-2">
@@ -325,13 +279,13 @@
                           name="ShieldCheck"
                           className="w-4 h-4"
                         />{" "}
-                        Parameters
+                        Instellingen
                       </h2>
                       <div className="space-y-6">
                         <div>
                           <div className="flex justify-between mb-2">
                             <label className="text-sm font-bold text-slate-700">
-                              Risicovrije Voet
+                              Risicovrije Voet (Sparen)
                             </label>
                             <span className="text-sm font-bold text-orange-600 bg-orange-50 px-2 rounded">
                               {riskFreeRate}%
@@ -352,48 +306,28 @@
                         <div>
                           <div className="flex justify-between mb-2">
                             <label className="text-sm font-bold text-slate-700">
-                              Portfolio Beta
+                              Beta (&beta; - Risico)
                             </label>
-                            <span className="text-sm font-bold text-blue-600 bg-blue-50 px-2 rounded">
+                            <span className="text-sm font-bold text-indigo-600 bg-blue-50 px-2 rounded">
                               {beta.toFixed(1)}
                             </span>
                           </div>
                           <input
                             type="range"
                             min="0.1"
-                            max="2.5"
+                            max="4.0"
                             step="0.1"
                             value={beta}
                             onChange={(e) =>
                               setBeta(parseFloat(e.target.value))
                             }
-                            className="w-full accent-blue-600 h-2 bg-slate-200 rounded-lg appearance-none"
+                            className="w-full accent-indigo-600 h-2 bg-slate-200 rounded-lg appearance-none"
                           />
-                        </div>
-                        <div>
-                          <label className="text-sm font-bold block mb-2 text-slate-700 flex items-center gap-2">
-                            <Icon
-                              name="Layers"
-                              className="w-4 h-4"
-                            />{" "}
-                            Simulaties
-                          </label>
-                          <select
-                            value={numSimulations}
-                            onChange={(e) =>
-                              setNumSimulations(parseInt(e.target.value))
-                            }
-                            className="w-full bg-slate-50 border border-slate-200 p-2 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                          >
-                            <option value="100">100 (Snel)</option>
-                            <option value="1000">1.000 (Standaard)</option>
-                            <option value="5000">5.000 (Nauwkeurig)</option>
-                          </select>
                         </div>
                         <button
                           onClick={runSimulation}
                           disabled={isSimulating}
-                          className="w-full bg-slate-900 text-white font-bold py-3 rounded-xl shadow-lg flex items-center justify-center gap-2 hover:bg-black transition-all transform active:scale-95"
+                          className="w-full bg-indigo-900 text-white font-bold py-3 rounded-xl shadow-lg flex items-center justify-center gap-2 hover:bg-black transition-all"
                         >
                           <Icon
                             name="RefreshCcw"
@@ -405,7 +339,6 @@
                         </button>
                       </div>
                     </div>
-
                     <div className="bg-slate-900 text-white p-6 rounded-2xl shadow-xl">
                       <h3 className="font-bold mb-4 text-sm flex items-center gap-2">
                         <Icon
@@ -416,13 +349,13 @@
                       </h3>
                       <div className="space-y-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-1 bg-orange-500 border-t border-dashed"></div>
+                          <div className="w-8 h-1 bg-orange-500 border-t border-dashed border-white"></div>
                           <span className="text-xs font-semibold">
-                            Sparen (Gegarandeerd)
+                            Sparen (Rf)
                           </span>
                         </div>
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-1.5 bg-blue-600 rounded-full"></div>
+                          <div className="w-8 h-1.5 bg-indigo-600 rounded-full"></div>
                           <span className="text-xs font-semibold">
                             Beleggen (Mediaan)
                           </span>
@@ -437,9 +370,8 @@
                     </div>
                   </section>
 
-                  {/* Grafiek Kolom */}
                   <section className="lg:col-span-3 space-y-6">
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-[500px]">
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-[480px]">
                       {results && (
                         <ResponsiveContainer
                           width="100%"
@@ -484,12 +416,11 @@
                               }
                             />
 
-                            {/* Kansgebied */}
                             <Area
                               type="monotone"
                               dataKey="p90"
                               stroke="none"
-                              fill="#3b82f6"
+                              fill="#4f46e5"
                               fillOpacity={0.15}
                               name="80% Kansgebied"
                               isAnimationActive={false}
@@ -504,13 +435,12 @@
                               isAnimationActive={false}
                             />
 
-                            {/* Individuele samples */}
                             {Array.from({ length: 8 }).map((_, i) => (
                               <Line
                                 key={i}
                                 type="monotone"
                                 dataKey={`sim${i}`}
-                                stroke="#2563eb"
+                                stroke="#4f46e5"
                                 strokeWidth={1}
                                 strokeOpacity={0.15}
                                 dot={false}
@@ -519,7 +449,6 @@
                               />
                             ))}
 
-                            {/* Statistiek grenzen */}
                             <Line
                               type="monotone"
                               dataKey="p90"
@@ -541,7 +470,6 @@
                               isAnimationActive={false}
                             />
 
-                            {/* Hoofdlijnen */}
                             <Line
                               type="monotone"
                               dataKey="riskFree"
@@ -560,13 +488,13 @@
                             <Line
                               type="monotone"
                               dataKey="median"
-                              stroke="#1d4ed8"
+                              stroke="#4338ca"
                               strokeWidth={5}
                               name="Beleggen"
                               isAnimationActive={false}
                               dot={{
                                 r: 5,
-                                fill: "#1d4ed8",
+                                fill: "#4338ca",
                                 strokeWidth: 2,
                                 stroke: "#fff",
                               }}
@@ -582,36 +510,26 @@
                       )}
                     </div>
 
-                    {/* Scorekaarten */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center">
-                        <div className="p-2 bg-orange-100 rounded-lg text-orange-600 mb-2">
-                          <Icon
-                            name="ShieldCheck"
-                            className="w-5 h-5"
-                          />
-                        </div>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
+                      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
                         <p className="text-slate-400 text-[10px] font-bold uppercase mb-1">
-                          Sparen (Zekerheid)
+                          Sparen
                         </p>
-                        <p className="text-2xl font-black text-slate-800">
+                        <p className="text-xl font-black text-slate-800">
                           €
                           {results
                             ? Math.round(results.rfFinal).toLocaleString()
                             : "..."}
                         </p>
-                      </div>
-                      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center">
-                        <div className="p-2 bg-blue-100 rounded-lg text-blue-600 mb-2">
-                          <Icon
-                            name="TrendingUp"
-                            className="w-5 h-5"
-                          />
-                        </div>
-                        <p className="text-slate-400 text-[10px] font-bold uppercase mb-1">
-                          Beleggen (Gemiddeld)
+                        <p className="text-[9px] text-slate-400 italic">
+                          Zekerheid
                         </p>
-                        <p className="text-2xl font-black text-blue-600">
+                      </div>
+                      <div className="bg-indigo-50 p-4 rounded-2xl border border-indigo-200 shadow-sm">
+                        <p className="text-indigo-400 text-[10px] font-bold uppercase mb-1">
+                          Beleggen (Mediaan)
+                        </p>
+                        <p className="text-xl font-black text-indigo-900">
                           €
                           {results
                             ? Math.round(
@@ -619,126 +537,101 @@
                               ).toLocaleString()
                             : "..."}
                         </p>
+                        <p className="text-[9px] text-indigo-400 italic">
+                          Meest waarschijnlijk
+                        </p>
                       </div>
-                      <div className="bg-rose-50 p-6 rounded-2xl border border-rose-100 shadow-sm flex flex-col items-center">
-                        <div className="p-2 bg-rose-100 rounded-lg text-rose-600 mb-2">
-                          <Icon
-                            name="ArrowDownCircle"
-                            className="w-5 h-5"
-                          />
-                        </div>
-                        <p className="text-rose-900 text-[10px] font-bold uppercase mb-1 text-opacity-60">
+                      <div className="bg-blue-600 p-4 rounded-2xl shadow-sm text-white">
+                        <p className="text-blue-100 text-[10px] font-bold uppercase mb-1">
+                          Beleggen (Gemiddelde)
+                        </p>
+                        <p className="text-xl font-black">
+                          €
+                          {results
+                            ? Math.round(results.avg).toLocaleString()
+                            : "..."}
+                        </p>
+                        <p className="text-[9px] text-blue-100 italic">
+                          Theoretisch midden
+                        </p>
+                      </div>
+                      <div className="bg-rose-50 p-4 rounded-2xl border border-rose-100 shadow-sm">
+                        <p className="text-rose-900 text-[10px] font-bold uppercase mb-1">
                           Risico-Index
                         </p>
-                        <p className="text-2xl font-black text-rose-600">
+                        <p className="text-xl font-black text-rose-600">
                           {results
                             ? results.probUnderperform.toFixed(1)
                             : "..."}
                           %
                         </p>
-                        <p className="text-[10px] text-rose-700 font-medium text-center">
-                          Kans op lagere waarde dan sparen
+                        <p className="text-[9px] text-rose-700 italic">
+                          Kans verlies vs Sparen
                         </p>
-                      </div>
-                    </div>
-
-                    {/* Extremen */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="bg-emerald-50 p-6 rounded-2xl border border-emerald-100 shadow-sm flex items-center gap-4">
-                        <div className="p-3 bg-emerald-100 rounded-full text-emerald-600">
-                          <Icon
-                            name="Trophy"
-                            className="w-6 h-6"
-                          />
-                        </div>
-                        <div>
-                          <p className="text-emerald-900 text-[10px] font-bold uppercase tracking-widest text-opacity-60">
-                            "Geluksvogel" Scenario
-                          </p>
-                          <p className="text-2xl font-black text-emerald-700">
-                            €
-                            {results
-                              ? Math.round(results.best).toLocaleString()
-                              : "..."}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="bg-slate-200 p-6 rounded-2xl border border-slate-300 shadow-sm flex items-center gap-4 text-slate-700">
-                        <div className="p-3 bg-slate-300 rounded-full">
-                          <Icon
-                            name="AlertCircle"
-                            className="w-6 h-6"
-                          />
-                        </div>
-                        <div>
-                          <p className="text-slate-900 text-[10px] font-bold uppercase tracking-widest text-opacity-60">
-                            "Pechvogel" Scenario
-                          </p>
-                          <p className="text-2xl font-black">
-                            €
-                            {results
-                              ? Math.round(results.worst).toLocaleString()
-                              : "..."}
-                          </p>
-                        </div>
                       </div>
                     </div>
                   </section>
                 </div>
               ) : (
-                /* Uitleg Tabblad */
+                /* Uitleg voor HBO Studenten */
                 <div className="bg-white p-8 rounded-3xl border border-slate-200 max-w-4xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <section>
-                    <h2 className="text-3xl font-black text-slate-900 mb-6 underline decoration-blue-500 underline-offset-8">
-                      Uitleg voor Bedrijfskunde Studenten
+                    <h2 className="text-3xl font-black text-slate-900 mb-6 underline decoration-indigo-500 underline-offset-8">
+                      Begrijp je Beslissing
                     </h2>
-                    <div className="space-y-6 text-slate-700 leading-relaxed">
+                    <div className="space-y-6 text-slate-700 leading-relaxed text-lg">
                       <p>
-                        In de bedrijfswereld neem je beslissingen op basis van
-                        onzekerheid. Een <strong>Monte Carlo simulatie</strong>{" "}
-                        helpt je door de toekomst niet één keer te voorspellen,
-                        maar duizenden keren na te spelen.
+                        Als manager moet je keuzes maken over waar je geld in
+                        steekt. Kies je voor de veilige weg (sparen) of neem je
+                        risico voor een hogere winst?
                       </p>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-4">
                         <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100">
-                          <h3 className="text-lg font-bold text-blue-900 mb-4">
-                            Kernbegrippen
-                          </h3>
-                          <ul className="space-y-4 text-sm">
-                            <li className="flex gap-2 font-medium">
-                              <span>&bull;</span>{" "}
-                              <span>
-                                <strong>Sparen (Oranje):</strong> Je benchmark
-                                zonder risico.
-                              </span>
-                            </li>
-                            <li className="flex gap-2 font-medium">
-                              <span>&bull;</span>{" "}
-                              <span>
-                                <strong>Beleggen (Donkerblauw):</strong> De
-                                mediaan (middenwaarde) van alle simulaties.
-                              </span>
-                            </li>
-                            <li className="flex gap-2 font-medium">
-                              <span>&bull;</span>{" "}
-                              <span>
-                                <strong>80% Kansgebied:</strong> De zone waarin
-                                8 van de 10 uitkomsten vallen.
-                              </span>
-                            </li>
-                          </ul>
-                        </div>
-                        <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 flex flex-col justify-center">
-                          <h3 className="text-lg font-bold text-slate-900 mb-2 italic">
-                            Management Inzicht
+                          <h3 className="text-xl font-bold text-blue-900 mb-4">
+                            1. Monte Carlo & Beta
                           </h3>
                           <p className="text-sm">
-                            Rendement is nooit een belofte, maar een
-                            kansverdeling. Hoe hoger de Beta, hoe breder de
-                            "wolk" en hoe groter de kans op extreme verliezen.
+                            We spelen de toekomst duizenden keren na met
+                            willekeurige jaren uit de beursgeschiedenis. De{" "}
+                            <strong>Beta</strong> is je 'gaspedaal': hoe hoger
+                            de Beta, hoe harder je reageert op marktbewegingen.
                           </p>
                         </div>
+                        <div className="bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
+                          <h3 className="text-xl font-bold text-indigo-900 mb-4">
+                            2. Diversificatie
+                          </h3>
+                          <p className="text-sm">
+                            Spreiden is "niet al je eieren in één mandje
+                            leggen". In deze simulator gebruiken we de{" "}
+                            <strong>AEX-index</strong>. Omdat je in 25 bedrijven
+                            tegelijk belegt, is je risico al veel lager dan
+                            wanneer je in slechts één bedrijf zou beleggen.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                        <h3 className="text-xl font-bold text-slate-900 mb-3 flex items-center gap-2">
+                          <Icon
+                            name="AlertCircle"
+                            className="text-amber-500 w-6 h-6"
+                          />
+                          De Les: Risico vreet rendement op
+                        </h3>
+                        <p className="text-sm">
+                          Als je de Beta (risico) te hoog zet, daalt de{" "}
+                          <strong>Mediaan</strong> (je meest waarschijnlijke
+                          winst). Dit komt door <em>volatiliteits-drag</em>:
+                          grote schommelingen maken het wiskundig lastig om je
+                          kapitaal vast te houden.{" "}
+                        </p>
+                        <p className="text-sm mt-3 font-medium text-indigo-600 italic">
+                          Spreiden (diversificatie) is het enige middel om deze
+                          'drag' te verminderen: je houdt hetzelfde verwachte
+                          rendement, maar verlaagt de schadelijke schommelingen.
+                        </p>
                       </div>
                     </div>
                   </section>
@@ -755,42 +648,35 @@
                         name="Beaker"
                         className="w-6 h-6 text-blue-300"
                       />{" "}
-                      Experimenteer Zelf
+                      Probeer dit eens:
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
                       <div className="bg-white/10 p-5 rounded-2xl border border-white/20 backdrop-blur-sm">
                         <h4 className="font-bold text-blue-300 mb-2">
-                          1. De Spaar-check
+                          De Spaar-test
                         </h4>
-                        <p className="text-xs text-blue-100 mb-4 font-medium">
-                          Zet de Risicovrije Voet op 5% en de Beta op 1.0.
-                        </p>
-                        <p className="text-[11px] font-bold text-white italic underline decoration-orange-500 decoration-2">
-                          Heeft beleggen nog zin als sparen veel oplevert?
+                        <p className="text-blue-100">
+                          Zet sparen op 4%. Is het risico van beleggen nog wel
+                          de moeite waard als sparen al zoveel zekerheid biedt?
                         </p>
                       </div>
                       <div className="bg-white/10 p-5 rounded-2xl border border-white/20 backdrop-blur-sm">
                         <h4 className="font-bold text-blue-300 mb-2">
-                          2. De Gaspedaal-test
+                          De Gokker
                         </h4>
-                        <p className="text-xs text-blue-100 mb-4 font-medium">
-                          Zet de Beta op 2.0 (Agressief).
-                        </p>
-                        <p className="text-[11px] font-bold text-white italic underline decoration-blue-500 decoration-2">
-                          Zie hoe de wolk breder wordt en de kans op verlies
-                          toeneemt.
+                        <p className="text-blue-100">
+                          Zet Beta op 4.0. Zie je dat de dikke blauwe lijn bijna
+                          naar nul zakt? Dat is het gevaar van teveel risico in
+                          één keer.
                         </p>
                       </div>
                       <div className="bg-white/10 p-5 rounded-2xl border border-white/20 backdrop-blur-sm">
                         <h4 className="font-bold text-blue-300 mb-2">
-                          3. De Grote Getallen
+                          De Gratis Lunch
                         </h4>
-                        <p className="text-xs text-blue-100 mb-4 font-medium">
-                          Vergelijk 100 met 5.000 simulaties.
-                        </p>
-                        <p className="text-[11px] font-bold text-white italic underline decoration-emerald-500 decoration-2">
-                          Worden de resultaten stabieler naarmate je meer runs
-                          doet?
+                        <p className="text-blue-100">
+                          Besef dat zonder de spreiding van de AEX, de blauwe
+                          wolk nóg groter zou zijn en de drag nog erger.
                         </p>
                       </div>
                     </div>
