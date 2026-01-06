@@ -101,6 +101,7 @@
         const [numSimulations, setNumSimulations] = useState(1000);
         const [results, setResults] = useState(null);
         const [isSimulating, setIsSimulating] = useState(false);
+        const [showFlawModal, setShowFlawModal] = useState(false);
 
         // Historische AEX marktpremies (AEX rendement minus toenmalige risicovrije voet)
         const historicalData = useMemo(
@@ -646,163 +647,135 @@
                 /* Uitleg Tabblad */
                 <div className="bg-white p-8 rounded-3xl border border-slate-200 max-w-4xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <section>
-                    <h2 className="text-3xl font-black text-slate-900 mb-6 underline decoration-indigo-500 underline-offset-8">
+                    <h2 className="text-3xl font-black text-slate-900 mb-8 underline decoration-indigo-500 underline-offset-8">
                       Hoe werkt het?
                     </h2>
-                    <div className="space-y-8 text-slate-700 leading-relaxed text-lg">
-                      <p>
-                        Als manager maak je keuzes tussen veiligheid en groei.
-                        In deze simulator zie je wat er gebeurt als we de
-                        geschiedenis van de AEX 1.000 keer 'naspelen'.
-                      </p>
+                    <p className="text-base text-slate-700 leading-relaxed mb-8">
+                      Met deze simulator ontdek je de relatie tussen risico en rendement. Je simuleert wat er gebeurt als je €10.000 investeert over een periode van 10 jaar, gebaseerd op historische AEX-data.
+                    </p>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100">
-                          <h3 className="text-xl font-bold text-blue-900 mb-4">
-                            Monte Carlo & Beta
-                          </h3>
-                          <p className="text-sm">
-                            We voorspellen de toekomst niet, we simuleren hem.
-                            De <strong>Beta</strong> is je 'gaspedaal': bij een
-                            hoge Beta stijg je harder in goede jaren, maar val
-                            je ook dieper in slechte jaren.
-                          </p>
-                        </div>
-                        <div className="bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
-                          <h3 className="text-xl font-bold text-indigo-900 mb-4">
-                            Spreiden (De Gratis Lunch)
-                          </h3>
-                          <p className="text-sm">
-                            Door niet in één aandeel maar in de hele{" "}
-                            <strong>AEX-index</strong> te beleggen, spreid je je
-                            risico. Dit zorgt ervoor dat de klappen minder hard
-                            aankomen, terwijl de kans op winst blijft bestaan.
-                          </p>
+                    <div className="space-y-8">
+                      {/* Wat is rendement? */}
+                      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-2xl border border-blue-100">
+                        <h3 className="text-xl font-black text-slate-900 mb-4">
+                          Wat is rendement?
+                        </h3>
+                        <p className="text-sm text-slate-700 mb-4">
+                          Rendement is hoeveel je geld groeit. In deze simulator zie je twee manieren:
+                        </p>
+                        <div className="space-y-4">
+                          <div className="bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-orange-200">
+                            <h4 className="font-bold text-orange-600 mb-2 flex items-center gap-2">
+                              <div className="w-4 h-0.5 bg-orange-500 border-t border-dashed"></div>
+                              Sparen (oranje lijn)
+                            </h4>
+                            <p className="text-sm text-slate-600">
+                              Je geld groeit elk jaar met een vast percentage. Dit is de risicovrije voet. Je weet vooraf precies wat je krijgt.
+                            </p>
+                          </div>
+                          <div className="bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-indigo-200">
+                            <h4 className="font-bold text-indigo-700 mb-2 flex items-center gap-2">
+                              <div className="w-4 h-1 bg-indigo-600 rounded-full"></div>
+                              Beleggen (blauwe lijn)
+                            </h4>
+                            <p className="text-sm text-slate-600">
+                              Je geld groeit mee met de aandelenmarkt. Soms stijgt de markt flink, soms daalt ze. De blauwe lijn toont de <strong>mediaan</strong>: de uitkomst die je het vaakst kunt verwachten.
+                            </p>
+                          </div>
                         </div>
                       </div>
 
-                      <div className="bg-slate-50 p-8 rounded-2xl border border-slate-200">
-                        <h3 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-3">
-                          <Icon
-                            name="AlertCircle"
-                            className="text-amber-500 w-8 h-8"
-                          />
-                          De Les: Waarom risico je winst opvreet
+                      {/* Wat is risico? */}
+                      <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-6 rounded-2xl border border-slate-200">
+                        <h3 className="text-xl font-black text-slate-900 mb-4">
+                          Wat is risico?
                         </h3>
-
-                        <p className="mb-6">
-                          Je zou verwachten dat meer risico (hogere Beta) altijd
-                          leidt tot meer winst. Maar als je het risico te hoog
-                          zet, daalt de <strong>Mediaan</strong> (de meest
-                          waarschijnlijke uitkomst) juist. Dit heet{" "}
-                          <em>volatiliteits-drag</em>.{" "}
+                        <p className="text-sm text-slate-700 mb-4">
+                          Risico betekent onzekerheid. Bij beleggen weet je niet precies wat je terugkrijgt.
                         </p>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
-                            <h4 className="font-bold text-rose-600 mb-3 text-sm uppercase">
-                              Het probleem: Verliezen doen meer pijn
-                            </h4>
-                            <p className="text-sm mb-4">
-                              Stel je hebt €10.000:
-                            </p>
-                            <ul className="text-sm space-y-2">
-                              <li className="flex justify-between">
-                                <span>Jaar 1: +50% winst</span>{" "}
-                                <span>&rarr; €15.000</span>
-                              </li>
-                              <li className="flex justify-between">
-                                <span>Jaar 2: -50% verlies</span>{" "}
-                                <span>&rarr; €7.500</span>
-                              </li>
-                              <li className="flex justify-between font-bold pt-2 border-t text-rose-600">
-                                <span>Eindstand:</span> <span>€7.500</span>
-                              </li>
-                            </ul>
-                            <p className="text-xs mt-4 italic text-slate-500">
-                              Hoewel je "gemiddeld" 0% rendement had, ben je
-                              toch €2.500 kwijt!
-                            </p>
-                          </div>
-
-                          <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
-                            <h4 className="font-bold text-emerald-600 mb-3 text-sm uppercase">
-                              De oplossing: Spreiden
-                            </h4>
-                            <p className="text-sm mb-4">
-                              Door te spreiden maak je de uitschieters kleiner:
-                            </p>
-                            <ul className="text-sm space-y-2">
-                              <li className="flex justify-between">
-                                <span>Jaar 1: +5% winst</span>{" "}
-                                <span>&rarr; €10.500</span>
-                              </li>
-                              <li className="flex justify-between">
-                                <span>Jaar 2: -5% verlies</span>{" "}
-                                <span>&rarr; €9.975</span>
-                              </li>
-                              <li className="flex justify-between font-bold pt-2 border-t text-emerald-600">
-                                <span>Eindstand:</span> <span>€9.975</span>
-                              </li>
-                            </ul>
-                            <p className="text-xs mt-4 italic text-slate-500">
-                              Omdat de klappen minder hard zijn, houd je veel
-                              meer van je kapitaal vast.
+                        <div className="bg-white p-4 rounded-xl border border-slate-200 mb-4">
+                          <p className="text-sm text-slate-600 mb-3">
+                            De <strong className="text-indigo-600">blauwe wolk</strong> in de grafiek toont deze onzekerheid. Binnen dit gebied vallen 80% van alle mogelijke uitkomsten. Hoe breder de wolk, hoe groter de onzekerheid — en dus hoe hoger het risico.
+                          </p>
+                          <div className="bg-indigo-50 p-3 rounded-lg border-l-4 border-indigo-400">
+                            <p className="text-sm text-slate-700">
+                              De <strong>Beta</strong> bepaalt hoeveel risico je neemt. Een hogere Beta betekent dat je portfolio harder meestijgt in goede jaren, maar ook harder daalt in slechte jaren. Zie het als een volumeknop voor risico.
                             </p>
                           </div>
                         </div>
-                        <p className="text-sm mt-6 font-medium text-indigo-600 border-l-4 border-indigo-200 pl-4">
-                          Kortom: Hoe harder je portfolio heen en weer stuitert
-                          (hoge Beta), hoe meer kapitaal er 'verdampt' door deze
-                          wiskundige valkuil. Spreiden is de enige manier om dit
-                          effect te verminderen.
+                      </div>
+
+                      {/* De wisselwerking */}
+                      <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-6 rounded-2xl border border-amber-200">
+                        <h3 className="text-xl font-black text-slate-900 mb-4 flex items-center gap-2">
+                          <Icon name="AlertCircle" className="text-amber-500 w-6 h-6" />
+                          De wisselwerking
+                        </h3>
+                        <p className="text-base text-slate-800 font-semibold mb-4">
+                          Hier zit de kern: <span className="text-amber-700">meer rendement verwachten betekent meer risico accepteren.</span>
                         </p>
+                        <ul className="space-y-3 text-sm text-slate-700">
+                          <li className="flex gap-3">
+                            <span className="text-emerald-600 font-bold">✓</span>
+                            <div>
+                              <strong>Wil je zekerheid?</strong> Kies voor sparen. Je weet wat je krijgt, maar de groei is beperkt.
+                            </div>
+                          </li>
+                          <li className="flex gap-3">
+                            <span className="text-blue-600 font-bold">✓</span>
+                            <div>
+                              <strong>Wil je kans op meer groei?</strong> Kies voor beleggen. Maar accepteer dat het ook minder kan worden dan sparen.
+                            </div>
+                          </li>
+                        </ul>
+                        <div className="mt-4 bg-white p-4 rounded-xl border border-rose-200">
+                          <p className="text-sm text-slate-700">
+                            De <strong className="text-rose-600">Risico-Index</strong> (roze kaart) toont de kans dat beleggen slechter uitpakt dan sparen. Dit is het risico dat je neemt voor de kans op extra rendement.
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </section>
 
+                  {/* Probeer dit eens */}
                   <section className="bg-indigo-900 text-white p-8 rounded-3xl shadow-xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-8 opacity-10">
-                      <Icon
-                        name="Beaker"
-                        className="w-32 h-32"
-                      />
+                      <Icon name="Beaker" className="w-32 h-32" />
                     </div>
-                    <h2 className="text-2xl font-black mb-8 flex items-center gap-3">
-                      <Icon
-                        name="Beaker"
-                        className="w-6 h-6 text-blue-300"
-                      />{" "}
-                      Probeer dit eens:
+                    <h2 className="text-2xl font-black mb-6 flex items-center gap-3">
+                      <Icon name="Beaker" className="w-6 h-6 text-blue-300" />
+                      Probeer dit eens
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
-                      <div className="bg-white/10 p-5 rounded-2xl border border-white/20 backdrop-blur-sm">
-                        <h4 className="font-bold text-blue-300 mb-2">
-                          De Spaar-test
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="bg-white/10 p-6 rounded-2xl border border-white/20 backdrop-blur-sm">
+                        <h4 className="font-bold text-blue-200 mb-3 text-base">
+                          Experiment 1: De volumeknop
                         </h4>
-                        <p className="text-blue-100 font-medium">
-                          Zet sparen op 4%. Is de stress van de blauwe wolk het
-                          waard als sparen je al €15.000 gegarandeerd oplevert?
+                        <p className="text-sm text-blue-100">
+                          Zet de Beta op 0.5 en daarna op 2.0. Kijk wat er gebeurt met de blauwe wolk. Zie je hoe de onzekerheid toeneemt?
                         </p>
                       </div>
-                      <div className="bg-white/10 p-5 rounded-2xl border border-white/20 backdrop-blur-sm">
-                        <h4 className="font-bold text-blue-300 mb-2">
-                          De Gokker
+                      <div className="bg-white/10 p-6 rounded-2xl border border-white/20 backdrop-blur-sm">
+                        <h4 className="font-bold text-blue-200 mb-3 text-base">
+                          Experiment 2: De Flaw of Averages
                         </h4>
-                        <p className="text-blue-100 font-medium">
-                          Zet Beta op 4.0. Zie je dat de dikke blauwe lijn (de
-                          mediaan) bijna naar nul zakt? Je 'verdampt' je geld
-                          door teveel risico.
+                        <p className="text-sm text-blue-100 mb-4">
+                          Zet de Beta op 3.0. Waarom is het Gemiddelde (blauwe kaart) hoger dan de Mediaan (dikke blauwe lijn)?
                         </p>
+                        <button
+                          onClick={() => setShowFlawModal(true)}
+                          className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold py-2 px-4 rounded-lg transition-all flex items-center gap-2"
+                        >
+                          <Icon name="BookOpen" className="w-4 h-4" />
+                          Lees meer over de Flaw of Averages
+                        </button>
                       </div>
-                      <div className="bg-white/10 p-5 rounded-2xl border border-white/20 backdrop-blur-sm">
-                        <h4 className="font-bold text-blue-300 mb-2">
-                          De Risico-Index
+                      <div className="bg-white/10 p-6 rounded-2xl border border-white/20 backdrop-blur-sm">
+                        <h4 className="font-bold text-blue-200 mb-3 text-base">
+                          Experiment 3: Jouw risicotolerantie
                         </h4>
-                        <p className="text-blue-100 font-medium">
-                          Bij welke Beta wordt de kans op verlies (de roze
-                          kaart) groter dan 25%? Zou jij dat als manager
-                          accepteren?
+                        <p className="text-sm text-blue-100">
+                          Wat is voor jou een acceptabele Risico-Index? 20%? 30%? Stel de Beta zo in dat je binnen jouw grens blijft.
                         </p>
                       </div>
                     </div>
@@ -810,6 +783,141 @@
                 </div>
               )}
             </div>
+
+            {/* Flaw of Averages Modal */}
+            {showFlawModal && (
+              <div
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                onClick={() => setShowFlawModal(false)}
+              >
+                <div
+                  className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="sticky top-0 bg-gradient-to-br from-blue-600 to-indigo-700 text-white p-6 rounded-t-3xl">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-2xl font-black mb-2">De Flaw of Averages</h3>
+                        <p className="text-blue-100 text-sm">Waarom gemiddeldes misleidend kunnen zijn</p>
+                      </div>
+                      <button
+                        onClick={() => setShowFlawModal(false)}
+                        className="text-white/80 hover:text-white transition-colors"
+                      >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="p-8 space-y-6">
+                    {/* Introductie */}
+                    <div className="bg-amber-50 border-l-4 border-amber-400 p-5 rounded-r-xl">
+                      <p className="text-slate-800 font-semibold mb-2">Het klassieke voorbeeld:</p>
+                      <p className="text-slate-700 italic">
+                        "Een statisticus verdronk toen hij een rivier overstak met een gemiddelde diepte van 1 meter."
+                      </p>
+                    </div>
+
+                    {/* Afbeelding */}
+                    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
+                      <img
+                        src="background-material/the-flaw-of-averages.jpg"
+                        alt="The Flaw of Averages - persoon die verdrinkt in rivier met gemiddelde diepte van 3 feet"
+                        className="w-full rounded-xl shadow-lg"
+                      />
+                      <p className="text-xs text-slate-500 text-center mt-3 italic">
+                        Bron: "The Flaw of Averages" - gemiddelde diepte zegt niets over de gevaarlijke dieptes
+                      </p>
+                    </div>
+
+                    {/* Uitleg */}
+                    <div className="space-y-4">
+                      <h4 className="text-xl font-bold text-slate-900">Wat is het probleem?</h4>
+                      <p className="text-slate-700 leading-relaxed">
+                        Het <strong>gemiddelde</strong> vertelt je het wiskundige middelpunt van alle uitkomsten.
+                        Maar het vertelt je <em>niet</em> waar de meeste mensen eindigen. Bij een scheef verdeelde distributie
+                        (zoals bij hoge Beta) trekken een paar extreme winnaars het gemiddelde omhoog, terwijl de
+                        meerderheid veel lager eindigt.
+                      </p>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="bg-rose-50 p-5 rounded-xl border border-rose-200">
+                          <h5 className="font-bold text-rose-900 mb-2 flex items-center gap-2">
+                            <span className="text-2xl">❌</span>
+                            Gemiddelde (misleidend)
+                          </h5>
+                          <p className="text-sm text-slate-700">
+                            Een paar geluksvogels met enorme winst trekken het gemiddelde omhoog.
+                            Dit geeft een te rooskleurig beeld van wat je kunt verwachten.
+                          </p>
+                        </div>
+
+                        <div className="bg-emerald-50 p-5 rounded-xl border border-emerald-200">
+                          <h5 className="font-bold text-emerald-900 mb-2 flex items-center gap-2">
+                            <span className="text-2xl">✓</span>
+                            Mediaan (realistisch)
+                          </h5>
+                          <p className="text-sm text-slate-700">
+                            De mediaan toont waar de helft boven en de helft onder eindigt.
+                            Dit is je meest waarschijnlijke uitkomst.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Link naar het boek */}
+                    <div className="bg-gradient-to-br from-indigo-50 to-blue-50 p-6 rounded-2xl border border-indigo-200">
+                      <h4 className="text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
+                        <Icon name="BookOpen" className="w-5 h-5 text-indigo-600" />
+                        Meer lezen?
+                      </h4>
+                      <p className="text-sm text-slate-700 mb-4">
+                        Dit concept komt uit het boek <strong>"The Flaw of Averages"</strong> door Sam Savage.
+                        Het laat zien waarom plannen maken op basis van gemiddeldes kan leiden tot slechte beslissingen.
+                      </p>
+                      <a
+                        href="background-material/flaw_of_averages.pdf"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-5 py-3 rounded-xl transition-all shadow-md hover:shadow-lg"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Download PDF
+                      </a>
+                    </div>
+
+                    {/* Toepassing in de simulator */}
+                    <div className="bg-slate-800 text-white p-6 rounded-2xl">
+                      <h4 className="text-lg font-bold mb-3 flex items-center gap-2">
+                        <Icon name="Zap" className="w-5 h-5 text-yellow-400" />
+                        Zie het in de simulator
+                      </h4>
+                      <p className="text-slate-200 text-sm mb-4">
+                        Zet de Beta op 3.0 en vergelijk de <strong className="text-blue-300">blauwe kaart</strong> (Gemiddelde)
+                        met de <strong className="text-indigo-300">dikke blauwe lijn</strong> (Mediaan) in de grafiek.
+                      </p>
+                      <p className="text-slate-300 text-sm italic">
+                        Je zult zien dat het gemiddelde veel hoger ligt. Maar als je zou investeren,
+                        heb je een grotere kans om bij de mediaan (of lager) te eindigen dan bij het gemiddelde.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="sticky bottom-0 bg-slate-50 px-8 py-4 rounded-b-3xl border-t border-slate-200">
+                    <button
+                      onClick={() => setShowFlawModal(false)}
+                      className="w-full bg-slate-800 hover:bg-black text-white font-bold py-3 rounded-xl transition-all"
+                    >
+                      Sluiten
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         );
       };
