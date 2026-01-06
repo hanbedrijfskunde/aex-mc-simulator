@@ -102,6 +102,7 @@
         const [results, setResults] = useState(null);
         const [isSimulating, setIsSimulating] = useState(false);
 
+        // Historische AEX marktpremies (AEX rendement minus toenmalige risicovrije voet)
         const historicalData = useMemo(
           () =>
             [
@@ -233,8 +234,9 @@
                     <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
                       Management Simulator
                     </h1>
-                    <p className="text-slate-500 text-sm italic">
-                      Hulpmiddel voor het begrijpen van Risico en Rendement
+                    <p className="text-slate-500 text-sm italic text-wrap">
+                      Strategische investeringsbeslissingen onderbouwd met AEX
+                      data
                     </p>
                   </div>
                 </div>
@@ -244,7 +246,7 @@
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
                       activeTab === "simulation"
                         ? "bg-white text-indigo-600 shadow-sm"
-                        : "text-slate-500"
+                        : "text-slate-500 hover:text-slate-800"
                     }`}
                   >
                     <Icon
@@ -258,7 +260,7 @@
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${
                       activeTab === "explanation"
                         ? "bg-white text-indigo-600 shadow-sm"
-                        : "text-slate-500"
+                        : "text-slate-500 hover:text-slate-800"
                     }`}
                   >
                     <Icon
@@ -306,7 +308,7 @@
                         <div>
                           <div className="flex justify-between mb-2">
                             <label className="text-sm font-bold text-slate-700">
-                              Beta (&beta; - Risico)
+                              Portfolio Beta (&beta;)
                             </label>
                             <span className="text-sm font-bold text-indigo-600 bg-blue-50 px-2 rounded">
                               {beta.toFixed(1)}
@@ -323,6 +325,26 @@
                             }
                             className="w-full accent-indigo-600 h-2 bg-slate-200 rounded-lg appearance-none"
                           />
+                        </div>
+                        <div>
+                          <label className="text-sm font-bold block mb-2 text-slate-700 flex items-center gap-2">
+                            <Icon
+                              name="Layers"
+                              className="w-4 h-4"
+                            />{" "}
+                            Simulaties
+                          </label>
+                          <select
+                            value={numSimulations}
+                            onChange={(e) =>
+                              setNumSimulations(parseInt(e.target.value))
+                            }
+                            className="w-full bg-slate-50 border border-slate-200 p-2 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                          >
+                            <option value="100">100 (Snel)</option>
+                            <option value="1000">1.000 (Standaard)</option>
+                            <option value="5000">5.000 (Nauwkeurig)</option>
+                          </select>
                         </div>
                         <button
                           onClick={runSimulation}
@@ -349,7 +371,7 @@
                       </h3>
                       <div className="space-y-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-1 bg-orange-500 border-t border-dashed border-white"></div>
+                          <div className="w-8 h-1 bg-orange-500 border-t border-dashed"></div>
                           <span className="text-xs font-semibold">
                             Sparen (Rf)
                           </span>
@@ -361,7 +383,7 @@
                           </span>
                         </div>
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-3 bg-blue-500/20 rounded-sm"></div>
+                          <div className="w-8 h-3 bg-indigo-500/20 rounded-sm"></div>
                           <span className="text-xs font-semibold">
                             80% Kansgebied
                           </span>
@@ -555,7 +577,7 @@
                           Theoretisch midden
                         </p>
                       </div>
-                      <div className="bg-rose-50 p-4 rounded-2xl border border-rose-100 shadow-sm">
+                      <div className="bg-rose-50 p-4 rounded-2xl border border-rose-100 shadow-sm text-center">
                         <p className="text-rose-900 text-[10px] font-bold uppercase mb-1">
                           Risico-Index
                         </p>
@@ -570,73 +592,176 @@
                         </p>
                       </div>
                     </div>
+
+                    {/* Extreme Scenario's (Geluksvogel & Pechvogel) */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="bg-emerald-50 p-5 rounded-2xl border border-emerald-100 shadow-sm flex items-center gap-4">
+                        <div className="p-3 bg-emerald-100 rounded-full text-emerald-600">
+                          <Icon
+                            name="Trophy"
+                            className="w-6 h-6"
+                          />
+                        </div>
+                        <div>
+                          <p className="text-emerald-900 text-[10px] font-bold uppercase tracking-widest text-opacity-60">
+                            "Geluksvogel" Scenario
+                          </p>
+                          <p className="text-2xl font-black text-emerald-700">
+                            €
+                            {results
+                              ? Math.round(results.best).toLocaleString()
+                              : "..."}
+                          </p>
+                          <p className="text-[9px] text-emerald-600 italic">
+                            De beste uitkomst uit alle simulaties
+                          </p>
+                        </div>
+                      </div>
+                      <div className="bg-slate-200 p-5 rounded-2xl border border-slate-300 shadow-sm flex items-center gap-4 text-slate-700">
+                        <div className="p-3 bg-slate-300 rounded-full">
+                          <Icon
+                            name="AlertCircle"
+                            className="w-6 h-6"
+                          />
+                        </div>
+                        <div>
+                          <p className="text-slate-900 text-[10px] font-bold uppercase tracking-widest text-opacity-60">
+                            "Pechvogel" Scenario
+                          </p>
+                          <p className="text-2xl font-black">
+                            €
+                            {results
+                              ? Math.round(results.worst).toLocaleString()
+                              : "..."}
+                          </p>
+                          <p className="text-[9px] text-slate-500 italic">
+                            De slechtste uitkomst uit alle simulaties
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </section>
                 </div>
               ) : (
-                /* Uitleg voor HBO Studenten */
+                /* Uitleg Tabblad */
                 <div className="bg-white p-8 rounded-3xl border border-slate-200 max-w-4xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <section>
                     <h2 className="text-3xl font-black text-slate-900 mb-6 underline decoration-indigo-500 underline-offset-8">
-                      Begrijp je Beslissing
+                      Hoe werkt het?
                     </h2>
-                    <div className="space-y-6 text-slate-700 leading-relaxed text-lg">
+                    <div className="space-y-8 text-slate-700 leading-relaxed text-lg">
                       <p>
-                        Als manager moet je keuzes maken over waar je geld in
-                        steekt. Kies je voor de veilige weg (sparen) of neem je
-                        risico voor een hogere winst?
+                        Als manager maak je keuzes tussen veiligheid en groei.
+                        In deze simulator zie je wat er gebeurt als we de
+                        geschiedenis van de AEX 1.000 keer 'naspelen'.
                       </p>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 py-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100">
                           <h3 className="text-xl font-bold text-blue-900 mb-4">
-                            1. Monte Carlo & Beta
+                            Monte Carlo & Beta
                           </h3>
                           <p className="text-sm">
-                            We spelen de toekomst duizenden keren na met
-                            willekeurige jaren uit de beursgeschiedenis. De{" "}
-                            <strong>Beta</strong> is je 'gaspedaal': hoe hoger
-                            de Beta, hoe harder je reageert op marktbewegingen.
+                            We voorspellen de toekomst niet, we simuleren hem.
+                            De <strong>Beta</strong> is je 'gaspedaal': bij een
+                            hoge Beta stijg je harder in goede jaren, maar val
+                            je ook dieper in slechte jaren.
                           </p>
                         </div>
                         <div className="bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
                           <h3 className="text-xl font-bold text-indigo-900 mb-4">
-                            2. Diversificatie
+                            Spreiden (De Gratis Lunch)
                           </h3>
                           <p className="text-sm">
-                            Spreiden is "niet al je eieren in één mandje
-                            leggen". In deze simulator gebruiken we de{" "}
-                            <strong>AEX-index</strong>. Omdat je in 25 bedrijven
-                            tegelijk belegt, is je risico al veel lager dan
-                            wanneer je in slechts één bedrijf zou beleggen.
+                            Door niet in één aandeel maar in de hele{" "}
+                            <strong>AEX-index</strong> te beleggen, spreid je je
+                            risico. Dit zorgt ervoor dat de klappen minder hard
+                            aankomen, terwijl de kans op winst blijft bestaan.
                           </p>
                         </div>
                       </div>
 
-                      <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
-                        <h3 className="text-xl font-bold text-slate-900 mb-3 flex items-center gap-2">
+                      <div className="bg-slate-50 p-8 rounded-2xl border border-slate-200">
+                        <h3 className="text-2xl font-black text-slate-900 mb-6 flex items-center gap-3">
                           <Icon
                             name="AlertCircle"
-                            className="text-amber-500 w-6 h-6"
+                            className="text-amber-500 w-8 h-8"
                           />
-                          De Les: Risico vreet rendement op
+                          De Les: Waarom risico je winst opvreet
                         </h3>
-                        <p className="text-sm">
-                          Als je de Beta (risico) te hoog zet, daalt de{" "}
-                          <strong>Mediaan</strong> (je meest waarschijnlijke
-                          winst). Dit komt door <em>volatiliteits-drag</em>:
-                          grote schommelingen maken het wiskundig lastig om je
-                          kapitaal vast te houden.{" "}
+
+                        <p className="mb-6">
+                          Je zou verwachten dat meer risico (hogere Beta) altijd
+                          leidt tot meer winst. Maar als je het risico te hoog
+                          zet, daalt de <strong>Mediaan</strong> (de meest
+                          waarschijnlijke uitkomst) juist. Dit heet{" "}
+                          <em>volatiliteits-drag</em>.{" "}
                         </p>
-                        <p className="text-sm mt-3 font-medium text-indigo-600 italic">
-                          Spreiden (diversificatie) is het enige middel om deze
-                          'drag' te verminderen: je houdt hetzelfde verwachte
-                          rendement, maar verlaagt de schadelijke schommelingen.
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                            <h4 className="font-bold text-rose-600 mb-3 text-sm uppercase">
+                              Het probleem: Verliezen doen meer pijn
+                            </h4>
+                            <p className="text-sm mb-4">
+                              Stel je hebt €10.000:
+                            </p>
+                            <ul className="text-sm space-y-2">
+                              <li className="flex justify-between">
+                                <span>Jaar 1: +50% winst</span>{" "}
+                                <span>&rarr; €15.000</span>
+                              </li>
+                              <li className="flex justify-between">
+                                <span>Jaar 2: -50% verlies</span>{" "}
+                                <span>&rarr; €7.500</span>
+                              </li>
+                              <li className="flex justify-between font-bold pt-2 border-t text-rose-600">
+                                <span>Eindstand:</span> <span>€7.500</span>
+                              </li>
+                            </ul>
+                            <p className="text-xs mt-4 italic text-slate-500">
+                              Hoewel je "gemiddeld" 0% rendement had, ben je
+                              toch €2.500 kwijt!
+                            </p>
+                          </div>
+
+                          <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                            <h4 className="font-bold text-emerald-600 mb-3 text-sm uppercase">
+                              De oplossing: Spreiden
+                            </h4>
+                            <p className="text-sm mb-4">
+                              Door te spreiden maak je de uitschieters kleiner:
+                            </p>
+                            <ul className="text-sm space-y-2">
+                              <li className="flex justify-between">
+                                <span>Jaar 1: +5% winst</span>{" "}
+                                <span>&rarr; €10.500</span>
+                              </li>
+                              <li className="flex justify-between">
+                                <span>Jaar 2: -5% verlies</span>{" "}
+                                <span>&rarr; €9.975</span>
+                              </li>
+                              <li className="flex justify-between font-bold pt-2 border-t text-emerald-600">
+                                <span>Eindstand:</span> <span>€9.975</span>
+                              </li>
+                            </ul>
+                            <p className="text-xs mt-4 italic text-slate-500">
+                              Omdat de klappen minder hard zijn, houd je veel
+                              meer van je kapitaal vast.
+                            </p>
+                          </div>
+                        </div>
+                        <p className="text-sm mt-6 font-medium text-indigo-600 border-l-4 border-indigo-200 pl-4">
+                          Kortom: Hoe harder je portfolio heen en weer stuitert
+                          (hoge Beta), hoe meer kapitaal er 'verdampt' door deze
+                          wiskundige valkuil. Spreiden is de enige manier om dit
+                          effect te verminderen.
                         </p>
                       </div>
                     </div>
                   </section>
 
-                  <section className="bg-blue-900 text-white p-8 rounded-3xl shadow-xl relative overflow-hidden">
+                  <section className="bg-indigo-900 text-white p-8 rounded-3xl shadow-xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-8 opacity-10">
                       <Icon
                         name="Beaker"
@@ -655,28 +780,29 @@
                         <h4 className="font-bold text-blue-300 mb-2">
                           De Spaar-test
                         </h4>
-                        <p className="text-blue-100">
-                          Zet sparen op 4%. Is het risico van beleggen nog wel
-                          de moeite waard als sparen al zoveel zekerheid biedt?
+                        <p className="text-blue-100 font-medium">
+                          Zet sparen op 4%. Is de stress van de blauwe wolk het
+                          waard als sparen je al €15.000 gegarandeerd oplevert?
                         </p>
                       </div>
                       <div className="bg-white/10 p-5 rounded-2xl border border-white/20 backdrop-blur-sm">
                         <h4 className="font-bold text-blue-300 mb-2">
                           De Gokker
                         </h4>
-                        <p className="text-blue-100">
-                          Zet Beta op 4.0. Zie je dat de dikke blauwe lijn bijna
-                          naar nul zakt? Dat is het gevaar van teveel risico in
-                          één keer.
+                        <p className="text-blue-100 font-medium">
+                          Zet Beta op 4.0. Zie je dat de dikke blauwe lijn (de
+                          mediaan) bijna naar nul zakt? Je 'verdampt' je geld
+                          door teveel risico.
                         </p>
                       </div>
                       <div className="bg-white/10 p-5 rounded-2xl border border-white/20 backdrop-blur-sm">
                         <h4 className="font-bold text-blue-300 mb-2">
-                          De Gratis Lunch
+                          De Risico-Index
                         </h4>
-                        <p className="text-blue-100">
-                          Besef dat zonder de spreiding van de AEX, de blauwe
-                          wolk nóg groter zou zijn en de drag nog erger.
+                        <p className="text-blue-100 font-medium">
+                          Bij welke Beta wordt de kans op verlies (de roze
+                          kaart) groter dan 25%? Zou jij dat als manager
+                          accepteren?
                         </p>
                       </div>
                     </div>
